@@ -66,16 +66,12 @@ fn get_count_of_rotations_past_0(file_path: &str) -> i32 {
     count_with_strategy(file_path, |position, instruction| {
         let (new_position, mut wrappings) = rotate_dial_with_wrappings(position, instruction);
 
-        if position == 0 {
-            if let Direction::Left(_) = instruction {
-                wrappings = wrappings.saturating_sub(1);
-            }
+        if position == 0 && matches!(instruction, Direction::Left(_)) {
+            wrappings = wrappings.saturating_sub(1);
         }
 
-        if let Direction::Left(x) = instruction {
-            if new_position == 0 && x > 0 {
-                wrappings += 1;
-            }
+        if let Direction::Left(x) = instruction && new_position == 0 && x > 0 {
+            wrappings += 1;
         }
 
         (new_position, wrappings)
