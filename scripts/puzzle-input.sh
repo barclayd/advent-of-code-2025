@@ -7,14 +7,14 @@ fi
 
 echo "$day"
 
-url="https://adventofcode.com/2025/day/${day}/input"
+export $(cat .env | xargs)
+
+url="https://adventofcode.com/${YEAR}/day/${day}/input"
 
 
 formatted_day=$(printf "%02d" $day)
 new_folder="day-$formatted_day"
 
 mkdir -p "${new_folder}"
-
-export $(cat .env | xargs)
 
 curl -b "session=${SESSION_COOKIE}" "$url" > "${new_folder}/input.txt"

@@ -17,6 +17,6 @@ cp aoc.template.rs $new_folder/src/main.rs
 
 export "$(cat .env | xargs)"
 
-url="https://adventofcode.com/2025/day/${day}"
+url="https://adventofcode.com/${YEAR}/day/${day}"
 title="$(curl -s --cookie "session=${SESSION_COOKIE}" "$url" | pup 'article h2 text{}' | sed 's/--- Day [0-9]*: \(.*\) ---/\1/')"
-echo "| ${day}   | [${title}](https://adventofcode.com/2025/day/${day}) | ★★ |" >> README.md
+echo "| ${day}   | [${title}](https://adventofcode.com/${YEAR}/day/${day}) | ★★ |" >> README.md
