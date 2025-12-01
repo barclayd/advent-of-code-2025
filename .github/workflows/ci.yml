@@ -1,0 +1,77 @@
+name: Rust CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+
+jobs:
+  find_changed_folders:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - id: set-matrix
+        run: |
+          # For pull requests, compare against the base branch
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "Pull request detected"
+            CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }} HEAD)
+          else
+            echo "Push detected"
+            # For pushes, compare against the previous commit
+            CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+          fi
+          
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+          
+          # Find Cargo.toml directories that have changes
+          CHANGED_FOLDERS=$(echo "$CHANGED_FILES" | xargs -I {} dirname {} | sort -u | \
+            while read dir; do
+              if [ -f "$dir/Cargo.toml" ]; then
+                echo "$dir"
+              elif [ -f "$(echo "$dir" | cut -d/ -f1)/Cargo.toml" ]; then
+                echo "$(echo "$dir" | cut -d/ -f1)"
+              fi
+            done | sort -u | jq -R -s -c 'split("\n")[:-1]')
+          
+          if [ "$CHANGED_FOLDERS" == "[]" ] || [ -z "$CHANGED_FOLDERS" ]; then
+            CHANGED_FOLDERS="[]"
+            echo "No Rust folders changed"
+          else
+            echo "Changed folders: $CHANGED_FOLDERS"
+          fi
+          
+          echo "matrix=${CHANGED_FOLDERS}" >> $GITHUB_OUTPUT
+
+  build_and_test:
+    needs: find_changed_folders
+    if: ${{ needs.find_changed_folders.outputs.matrix != '[]' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        folder: ${{ fromJson(needs.find_changed_folders.outputs.matrix) }}
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: |
+          cd ${{ matrix.folder }}
+          cargo build --verbose
+
+      - name: Run tests
+        run: |
+          cd ${{ matrix.folder }}
+          cargo test --verbose
