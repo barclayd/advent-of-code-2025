@@ -8,7 +8,7 @@ Solutions for [Advent of Code 2025](https://adventofcode.com/2025) written in Ru
 
 ## Prerequisites
 
-- [Rust](https://www.rust-lang.org/tools/install) (2021 edition or later)
+- [Rust](https://www.rust-lang.org/tools/install) (2024 edition or later)
 - Cargo (comes with Rust)
 
 ## Getting Started
