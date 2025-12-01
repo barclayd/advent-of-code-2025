@@ -74,7 +74,7 @@ This project uses GitHub Actions for continuous integration. The workflow:
 The workflow configuration can be found in `.github/workflows/ci.yml`.
 These run in a parallelized matrix.
 
-## Progress (50/50 ⭐️)
+## Progress (2/50 ⭐️)
 
 | Day | Challenge                                             | Stars |
 |-----|-------------------------------------------------------|-------|
