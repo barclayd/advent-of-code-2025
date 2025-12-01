@@ -78,4 +78,4 @@ These run in a parallelized matrix.
 
 | Day | Challenge                                             | Stars |
 |-----|-------------------------------------------------------|-------|
-| 1   | [Secret Entance](https://adventofcode.com/2025/day/1) | ⭐️ ️  |
+| 1   | [Secret Entance](https://adventofcode.com/2025/day/1) | ⭐️⭐️  |
