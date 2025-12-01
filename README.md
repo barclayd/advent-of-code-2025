@@ -76,6 +76,6 @@ These run in a parallelized matrix.
 
 ## Progress (2/50 ⭐️)
 
-| Day | Challenge                                             | Stars |
-|-----|-------------------------------------------------------|-------|
-| 1   | [Secret Entance](https://adventofcode.com/2025/day/1) | ⭐️⭐️  |
+| Day | Challenge                                              | Stars |
+|-----|--------------------------------------------------------|-------|
+| 1   | [Secret Entrance](https://adventofcode.com/2025/day/1) | ⭐️⭐️  |
