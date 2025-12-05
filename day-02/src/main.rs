@@ -108,7 +108,7 @@ mod tests {
     #[test]
     fn returns_expected_value_for_input_data_for_part_1() {
         let value = get_value("./input.txt", Part1);
-        assert_eq!(value, 8);
+        assert_eq!(value, 17077011375);
     }
 
     #[test]
@@ -120,6 +120,6 @@ mod tests {
     #[test]
     fn returns_expected_value_for_input_data_for_part_2() {
         let value = get_value("./input.txt", Part2);
-        assert_eq!(value, 4);
+        assert_eq!(value, 36037497037);
     }
 }
