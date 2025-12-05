@@ -74,8 +74,9 @@ This project uses GitHub Actions for continuous integration. The workflow:
 The workflow configuration can be found in `.github/workflows/ci.yml`.
 These run in a parallelized matrix.
 
-## Progress (2/24 ⭐️)
+## Progress (4/24 ⭐️)
 
 | Day | Challenge                                              | Stars |
 |-----|--------------------------------------------------------|-------|
 | 1   | [Secret Entrance](https://adventofcode.com/2025/day/1) | ⭐️⭐️  |
+| 2   | [Gift Shop ](https://adventofcode.com/2025/day/2)      | ⭐️⭐️  |
