@@ -1,5 +1,6 @@
-use std::fs;
 use crate::Part::{Part1, Part2};
+use std::fs;
+use rangemap::RangeInclusiveSet;
 
 #[derive(PartialEq, Debug)]
 enum Part {
@@ -7,15 +8,39 @@ enum Part {
     Part2,
 }
 
-fn get_value(file_path: &str, part: Part) -> i32 {
+fn get_value(file_path: &str, part: Part) -> usize {
     let file_contents =
         fs::read_to_string(file_path).expect("Should have been able to read the file");
 
-    for line in file_contents.lines() {
+    let mut parts = file_contents.split("\n\n");
 
+    let fresh_ingredient_id_ranges: RangeInclusiveSet<i64> = parts
+        .next()
+        .unwrap()
+        .lines()
+        .map(|line| {
+            let mut nums = line.split('-').map(|n| n.parse::<i64>().unwrap());
+            let start = nums.next().unwrap();
+            let end = nums.next().unwrap();
+            start..=end
+        })
+        .collect();
+
+    let available_ingredient_ids: Vec<i64> = parts
+        .next()
+        .unwrap()
+        .lines()
+        .map(|n| n.parse().unwrap())
+        .collect();
+
+    if part == Part1 {
+        available_ingredient_ids
+            .iter()
+            .filter(|n| fresh_ingredient_id_ranges.contains(n))
+            .count()
+    } else {
+        4
     }
-
-   if part == Part1 { 8 } else { 4 }
 }
 
 fn main() {
@@ -25,13 +50,13 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use crate::get_value;
     use crate::Part::{Part1, Part2};
+    use crate::get_value;
 
     #[test]
     fn returns_expected_value_test_data_for_part_1() {
         let value = get_value("./test.txt", Part1);
-        assert_eq!(value, 8);
+        assert_eq!(value, 3);
     }
 
     #[test]
