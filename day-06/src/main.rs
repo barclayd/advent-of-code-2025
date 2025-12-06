@@ -7,15 +7,47 @@ enum Part {
     Part2,
 }
 
-fn get_value(file_path: &str, part: Part) -> i32 {
+fn apply_operator(numbers: &[i64], op: char) -> i64 {
+    match op {
+        '*' => numbers.iter().product(),
+        '+' => numbers.iter().sum(),
+        _ => panic!("Unknown operator: {}", op),
+    }
+}
+
+fn get_value(file_path: &str, part: Part) -> i64 {
     let file_contents =
         fs::read_to_string(file_path).expect("Should have been able to read the file");
 
-    for line in file_contents.lines() {
+    let lines = file_contents.lines().collect::<Vec<&str>>();
 
-    }
+    let (operator_line, number_lines) = lines.split_last().expect("Input must have at least one line");
 
-   if part == Part1 { 8 } else { 4 }
+    let operators: Vec<char> = operator_line
+        .split_whitespace()
+        .map(|s| s.chars().next().expect("Operator expected"))
+        .collect();
+
+    let columns: Vec<Vec<i64>> = {
+        let mut numbers: Vec<Vec<i64>> = vec![Vec::new(); operators.len()];
+
+        for line in number_lines {
+            for (i, num_str) in line.split_whitespace().enumerate() {
+                if let Ok(num) = num_str.parse::<i64>() {
+                    numbers[i].push(num);
+                }
+            }
+        }
+        numbers
+    };
+
+    if part == Part1 {
+        columns
+            .iter()
+            .zip(operators.iter())
+            .map(|(col, &op)| apply_operator(col, op))
+            .sum()
+    } else { 4 }
 }
 
 fn main() {
@@ -31,7 +63,7 @@ mod tests {
     #[test]
     fn returns_expected_value_test_data_for_part_1() {
         let value = get_value("./test.txt", Part1);
-        assert_eq!(value, 8);
+        assert_eq!(value, 4277556);
     }
 
     #[test]
