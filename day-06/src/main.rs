@@ -1,7 +1,7 @@
 use crate::Part::{Part1, Part2};
 use std::fs;
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone, Copy)]
 enum Part {
     Part1,
     Part2,
@@ -11,92 +11,117 @@ fn apply_operator(numbers: &[i64], op: char) -> i64 {
     match op {
         '*' => numbers.iter().product(),
         '+' => numbers.iter().sum(),
-        _ => panic!("Unknown operator: {}", op),
+        _ => panic!("Unknown operator: {op}"),
     }
 }
 
-fn build_column_numbers(number_strings: &[&str], right_align: bool) -> Vec<i64> {
-    let chars: Vec<Vec<char>> = number_strings
+fn is_operator(c: char) -> bool {
+    matches!(c, '+' | '*')
+}
+
+fn parse_grid(lines: &[&str]) -> Vec<Vec<char>> {
+    let width = lines.iter().map(|l| l.len()).max().unwrap_or(0);
+
+    lines
         .iter()
-        .map(|s| {
-            if right_align {
-                s.chars().rev().collect()
-            } else {
-                s.chars().collect()
-            }
-        })
-        .collect();
-
-    let max_len = chars.iter().map(|v| v.len()).max().unwrap_or(0);
-
-    let positions: Box<dyn Iterator<Item = usize>> = if right_align {
-        Box::new((0..max_len).rev())
-    } else {
-        Box::new(0..max_len)
-    };
-
-    positions
-        .map(|pos| {
-            let digits: String = chars.iter().filter_map(|c| c.get(pos).copied()).collect();
-            digits.parse().unwrap_or(0)
+        .map(|l| {
+            let mut chars: Vec<char> = l.chars().collect();
+            chars.resize(width, ' ');
+            chars
         })
         .collect()
+}
+
+fn read_column(grid: &[Vec<char>], col: usize) -> (String, Option<char>) {
+    let mut digits = String::new();
+    let mut operator = None;
+
+    for row in grid {
+        let c = row[col];
+        if is_operator(c) {
+            operator = Some(c);
+        } else {
+            digits.push(c);
+        }
+    }
+
+    (digits, operator)
+}
+
+fn solve_part1(lines: &[&str]) -> i64 {
+    let (&operator_line, number_lines) = lines
+        .split_last()
+        .expect("Input must have at least one line");
+
+    let operators: Vec<char> = operator_line
+        .split_whitespace()
+        .filter_map(|s| s.chars().next())
+        .collect();
+
+    let mut columns: Vec<Vec<i64>> = vec![Vec::new(); operators.len()];
+
+    for line in number_lines {
+        for (i, num) in line
+            .split_whitespace()
+            .filter_map(|s| s.parse().ok())
+            .enumerate()
+        {
+            columns[i].push(num);
+        }
+    }
+
+    columns
+        .iter()
+        .zip(&operators)
+        .map(|(col, &op)| apply_operator(col, op))
+        .sum()
+}
+
+fn solve_part2(lines: &[&str]) -> i64 {
+    let grid = parse_grid(lines);
+    let width = grid.first().map_or(0, |row| row.len());
+
+    let mut answers = Vec::new();
+    let mut equation = Vec::new();
+    let mut current_op = None;
+
+    for col in 0..width {
+        let (digits, operator) = read_column(&grid, col);
+
+        if let Some(op) = operator {
+            current_op = Some(op);
+        }
+
+        match digits.trim().parse::<i64>() {
+            Ok(num) => equation.push(num),
+            Err(_) if !equation.is_empty() => {
+                // Empty column = end of problem
+                if let Some(op) = current_op {
+                    answers.push(apply_operator(&equation, op));
+                }
+                equation.clear();
+                current_op = None;
+            }
+            Err(_) => {}
+        }
+    }
+
+    if let Some(op) = current_op {
+        answers.push(apply_operator(&equation, op));
+    }
+
+    answers.iter().sum()
 }
 
 fn get_value(file_path: &str, part: Part) -> i64 {
     let file_contents =
         fs::read_to_string(file_path).expect("Should have been able to read the file");
 
-    let lines = file_contents.lines().collect::<Vec<&str>>();
+    let lines: Vec<&str> = file_contents.lines().collect();
 
-    let (operator_line, number_lines) = lines
-        .split_last()
-        .expect("Input must have at least one line");
-
-    let operators: Vec<char> = operator_line
-        .split_whitespace()
-        .map(|s| s.chars().next().expect("Operator expected"))
-        .collect();
-
-    let columns: Vec<Vec<i64>> = {
-        let mut numbers: Vec<Vec<i64>> = vec![Vec::new(); operators.len()];
-
-        for line in number_lines {
-            for (i, num_str) in line.split_whitespace().enumerate() {
-                if let Ok(num) = num_str.parse::<i64>() {
-                    numbers[i].push(num);
-                }
-            }
-        }
-        numbers
-    };
-
-    if part == Part1 {
-        columns
-            .iter()
-            .zip(operators.iter())
-            .map(|(col, &op)| apply_operator(col, op))
-            .sum()
-    } else {
-        let groups: Vec<Vec<&str>> = {
-            let mut groups: Vec<Vec<&str>> = vec![Vec::new(); operators.len()];
-
-            for line in number_lines {
-                for (i, num_str) in line.split_whitespace().enumerate() {
-                    groups[i].push(num_str);
-                }
-            }
-            groups
-        };
-
-        groups
-            .iter()
-            .zip(operators.iter())
-            .map(|(group, &op)| {
-                let column_numbers = build_column_numbers(group, op == '*');
-                apply_operator(&column_numbers, op)
-            })
-            .sum()
+    match part {
+        Part::Part1 => solve_part1(&lines),
+        Part::Part2 => solve_part2(&lines),
     }
 }
 
@@ -131,6 +156,6 @@ mod tests {
     #[test]
     fn returns_expected_value_for_input_data_for_part_2() {
         let value = get_value("./input.txt", Part2);
-        assert_eq!(value, 4);
+        assert_eq!(value, 7858808482092);
     }
 }
