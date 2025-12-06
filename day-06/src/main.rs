@@ -95,7 +95,6 @@ fn solve_part2(lines: &[&str]) -> i64 {
         match digits.trim().parse::<i64>() {
             Ok(num) => equation.push(num),
             Err(_) if !equation.is_empty() => {
-                // Empty column = end of problem
                 if let Some(op) = current_op {
                     answers.push(apply_operator(&equation, op));
                 }
