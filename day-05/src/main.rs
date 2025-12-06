@@ -1,6 +1,6 @@
 use crate::Part::{Part1, Part2};
-use std::fs;
 use rangemap::RangeInclusiveSet;
+use std::fs;
 
 #[derive(PartialEq, Debug)]
 enum Part {
@@ -39,7 +39,10 @@ fn get_value(file_path: &str, part: Part) -> usize {
             .filter(|n| fresh_ingredient_id_ranges.contains(n))
             .count()
     } else {
-        4
+        fresh_ingredient_id_ranges
+            .iter()
+            .map(|range| range.end() - range.start() + 1)
+            .sum::<i64>() as usize
     }
 }
 
@@ -68,12 +71,12 @@ mod tests {
     #[test]
     fn returns_expected_value_test_data_for_part_2() {
         let value = get_value("./test.txt", Part2);
-        assert_eq!(value, 4);
+        assert_eq!(value, 14);
     }
 
     #[test]
     fn returns_expected_value_for_input_data_for_part_2() {
         let value = get_value("./input.txt", Part2);
-        assert_eq!(value, 4);
+        assert_eq!(value, 358155203664116);
     }
 }
