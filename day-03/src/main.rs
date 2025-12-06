@@ -52,16 +52,6 @@ fn get_value(file_path: &str, part: Part) -> i64 {
     let file_contents =
         fs::read_to_string(file_path).expect("Should have been able to read the file");
 
-    // let sum: i32 = file_contents
-    //     .lines()
-    //     .map(|line| {
-    //         let digits: Vec<i32> = line.chars()
-    //             .map(|c| c.to_digit(10).unwrap() as i32)
-    //             .collect();
-    //         return two_largest_sequential(&digits);
-    //     })
-    //     .sum();
-
     return if part == Part1 {
         file_contents
             .lines()
