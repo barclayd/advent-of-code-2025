@@ -82,3 +82,4 @@ These run in a parallelized matrix.
 | 2   | [Gift Shop ](https://adventofcode.com/2025/day/2)      | ⭐️⭐️  |
 | 3   | [Lobby](https://adventofcode.com/2025/day/3)           | ⭐️⭐️  |
 | 4   | [Printing Department](https://adventofcode.com//day/4) | ⭐⭐    |
+| 5   | [Cafeteria](https://adventofcode.com//day/5)           | 22n   |
