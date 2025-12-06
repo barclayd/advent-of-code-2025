@@ -70,7 +70,10 @@ fn get_count_of_rotations_past_0(file_path: &str) -> i32 {
             wrappings = wrappings.saturating_sub(1);
         }
 
-        if let Direction::Left(x) = instruction && new_position == 0 && x > 0 {
+        if let Direction::Left(x) = instruction
+            && new_position == 0
+            && x > 0
+        {
             wrappings += 1;
         }
 
