@@ -1,5 +1,5 @@
 use crate::Part::{Part1, Part2};
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::fs;
 
 #[derive(PartialEq, Debug)]
@@ -69,7 +69,7 @@ impl TachyonManifold {
             .unwrap_or(Tile::Empty)
     }
 
-    fn split_count(&mut self) -> i32 {
+    fn split_count(&mut self) -> i64 {
         let (start_y, start_x) = self.find_beam_start().expect("Start of beam not found");
 
         let mut active_beams: HashSet<i32> = HashSet::new();
@@ -109,9 +109,48 @@ impl TachyonManifold {
 
         split_count
     }
+
+    fn timeline_count(&self) -> i64 {
+        let (start_y, start_x) = self.find_beam_start().expect("Start not found");
+
+        let mut timelines: HashMap<i32, i64> = HashMap::new();
+        timelines.insert(start_x, 1);
+
+        let height = self.grid.len() as i32;
+        let width = self.grid.first().map_or(0, |r| r.len()) as i32;
+
+        for y in (start_y + 1)..height {
+            let mut new_timelines: HashMap<i32, i64> = HashMap::new();
+
+            for (&x, &count) in &timelines {
+                if x < 0 || x >= width {
+                    continue;
+                }
+
+                match self.get_tile(y, x) {
+                    Tile::Empty => {
+                        *new_timelines.entry(x).or_insert(0) += count;
+                    }
+                    Tile::Splitter => {
+                        if x - 1 >= 0 && self.get_tile(y, x - 1) == Tile::Empty {
+                            *new_timelines.entry(x - 1).or_insert(0) += count;
+                        }
+                        if x + 1 < width && self.get_tile(y, x + 1) == Tile::Empty {
+                            *new_timelines.entry(x + 1).or_insert(0) += count;
+                        }
+                    }
+                    _ => {}
+                }
+            }
+
+            timelines = new_timelines;
+        }
+
+        timelines.values().sum()
+    }
 }
 
-fn get_value(file_path: &str, part: Part) -> i32 {
+fn get_value(file_path: &str, part: Part) -> i64 {
     let file_contents =
         fs::read_to_string(file_path).expect("Should have been able to read the file");
 
@@ -121,7 +160,10 @@ fn get_value(file_path: &str, part: Part) -> i32 {
 
             tachyon_manifold.split_count()
         }
-        Part::Part2 => 4,
+        Part::Part2 => {
+            let tachyon_manifold = TachyonManifold::new(&file_contents);
+            tachyon_manifold.timeline_count()
+        }
     }
 }
 
@@ -150,12 +192,12 @@ mod tests {
     #[test]
     fn returns_expected_value_test_data_for_part_2() {
         let value = get_value("./test.txt", Part2);
-        assert_eq!(value, 4);
+        assert_eq!(value, 40);
     }
 
     #[test]
     fn returns_expected_value_for_input_data_for_part_2() {
         let value = get_value("./input.txt", Part2);
-        assert_eq!(value, 4);
+        assert_eq!(value, 1393669447690);
     }
 }
