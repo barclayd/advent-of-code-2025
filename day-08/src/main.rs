@@ -45,12 +45,12 @@ impl UnionFind {
         self.parent[x]
     }
 
-    fn union(&mut self, x: usize, y: usize) {
+    fn union(&mut self, x: usize, y: usize) -> bool {
         let root_x = self.find(x);
         let root_y = self.find(y);
 
         if root_x == root_y {
-            return;
+            return false;
         }
 
         match self.rank[root_x].cmp(&self.rank[root_y]) {
@@ -68,6 +68,8 @@ impl UnionFind {
                 self.rank[root_x] += 1;
             }
         }
+
+        true
     }
 
     fn component_sizes(&mut self) -> Vec<usize> {
@@ -127,6 +129,34 @@ impl Playground {
 
         sizes.iter().take(3).map(|&s| s as i64).product()
     }
+
+    fn last_connection_x_product(&self) -> i64 {
+        let n = self.boxes.len();
+
+        let mut pairs: Vec<(i64, usize, usize)> = Vec::with_capacity(n * (n - 1) / 2);
+
+        for i in 0..n {
+            for j in (i + 1)..n {
+                let dist = self.boxes[i].squared_distance(&self.boxes[j]);
+                pairs.push((dist, i, j));
+            }
+        }
+
+        pairs.sort_unstable_by_key(|&(dist, _, _)| dist);
+
+        let mut uf = UnionFind::new(n);
+        let mut last_i = 0;
+        let mut last_j = 0;
+
+        for &(_, i, j) in &pairs {
+            if uf.union(i, j) {
+                last_i = i;
+                last_j = j;
+            }
+        }
+
+        self.boxes[last_i].x * self.boxes[last_j].x
+    }
 }
 
 fn get_value(file_path: &str, part: Part) -> i64 {
@@ -137,7 +167,7 @@ fn get_value(file_path: &str, part: Part) -> i64 {
 
     match part {
         Part1 => playground.solve(if file_path == "./test.txt" { 10 } else { 1000 }),
-        Part2 => 40
+        Part2 => playground.last_connection_x_product(),
     }
 }
 
@@ -164,15 +194,8 @@ mod tests {
     }
 
     #[test]
-    fn returns_expected_value_test_data_for_part_2() {
-        let value = get_value("./test.txt", Part2);
-        assert_eq!(value, 40);
-    }
-
-
-    #[test]
     fn returns_expected_value_for_input_data_for_part_2() {
         let value = get_value("./input.txt", Part2);
-        assert_eq!(value, 40);
+        assert_eq!(value, 3926518899);
     }
 }
