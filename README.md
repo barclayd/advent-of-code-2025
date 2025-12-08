@@ -9,7 +9,6 @@ Solutions for [Advent of Code 2025](https://adventofcode.com/2025) written in Ru
 ## Prerequisites
 
 - [Rust](https://www.rust-lang.org/tools/install) (2024 edition or later)
-- Cargo (comes with Rust)
 
 ## Getting Started
 
@@ -74,7 +73,7 @@ This project uses GitHub Actions for continuous integration. The workflow:
 The workflow configuration can be found in `.github/workflows/ci.yml`.
 These run in a parallelized matrix.
 
-## Progress (15/24 ⭐️)
+## Progress (16/24 ⭐️)
 
 | Day | Challenge                                                  | Stars |
 |-----|------------------------------------------------------------|-------|
