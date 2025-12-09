@@ -73,7 +73,7 @@ This project uses GitHub Actions for continuous integration. The workflow:
 The workflow configuration can be found in `.github/workflows/ci.yml`.
 These run in a parallelized matrix.
 
-## Progress (16/24 ⭐️)
+## Progress (18/24 ⭐️)
 
 | Day | Challenge                                                  | Stars |
 |-----|------------------------------------------------------------|-------|
@@ -84,4 +84,5 @@ These run in a parallelized matrix.
 | 5   | [Cafeteria](https://adventofcode.com/2025/day/5)           | ⭐⭐    |
 | 6   | [Trash Compactor](https://adventofcode.com/2025/day/6)     | ⭐⭐    |
 | 7   | [Laboratories](https://adventofcode.com/2025/day/7)        | ⭐⭐    |
-| 8   | [Playground](https://adventofcode.com/2025/day/8)          | ⭐     |
+| 8   | [Playground](https://adventofcode.com/2025/day/8)          | ⭐⭐    |
+| 9   | [Movie Theatre](https://adventofcode.com/2025/day/9)       | ⭐⭐    |
