@@ -41,18 +41,18 @@ impl Theatre {
 
         points.sort_by_key(|p| std::cmp::Reverse(p.x * x_dir));
 
-        let mut frontier = Vec::new();
+        let mut front = Vec::new();
         let mut best_y = i64::MIN;
 
         for p in points {
             let effective_y = p.y * y_dir;
             if effective_y > best_y {
-                frontier.push(p);
+                front.push(p);
                 best_y = effective_y;
             }
         }
 
-        frontier
+        front
     }
 
     fn largest_rectangle_area(&self) -> i64 {
