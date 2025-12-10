@@ -1,29 +1,11 @@
 use crate::Part::{Part1, Part2};
 use std::fs;
-use std::num::ParseIntError;
 
 #[derive(PartialEq, Debug)]
 enum Part {
     Part1,
     Part2,
 }
-
-// create a Factor struct
-// that has a vec of Machines
-// Machine struct: [ indicator: vec<Boolean>, button: vec[vec[i32]], joltage: vec[i32] ]
-// indicator ligths: # => on, . => off
-// to start a machine: indicator lights must match the diagram
-// its indicator lights are all initially off
-
-// [.##.]
-// 4 indicator lights
-// initially off
-// goal: first light off, 2nd + 3rd on, 4th off
-
-// lights can be toggled by pushing any of the listed buttons
-// button 0 toggles the first light
-
-// fewest total presses
 
 #[derive(Debug, Clone)]
 struct Indicator {
@@ -33,19 +15,14 @@ struct Indicator {
 
 #[derive(Debug)]
 enum ParseError {
-    InvalidFormat(String),
-    ParseInt(ParseIntError),
-}
-
-impl From<ParseIntError> for ParseError {
-    fn from(e: ParseIntError) -> Self {
-        ParseError::ParseInt(e)
-    }
+    InvalidFormat,
+    ParseInt,
 }
 #[derive(Debug, Clone)]
 struct Machine {
     indicators: Vec<Indicator>,
     buttons: Vec<Vec<i32>>,
+    #[allow(dead_code)]
     joltages: Vec<i32>,
 }
 
@@ -69,18 +46,11 @@ fn parse_bool(c: char) -> Result<Indicator, ParseError> {
 }
 
 impl Machine {
-    /// Parse a single line into a Machine
-    /// Format: [.##.] (3) (1,3) (2) (2,3) (0,2) (0,1) {3,5,4,7}
     fn parse(line: &str) -> Result<Self, ParseError> {
         let line = line.trim();
 
-        // Parse indicators: [.##.]
-        let indicator_start = line
-            .find('[')
-            .ok_or_else(|| ParseError::InvalidFormat("Missing '[' for indicator".into()))?;
-        let indicator_end = line
-            .find(']')
-            .ok_or_else(|| ParseError::InvalidFormat("Missing ']' for indicator".into()))?;
+        let indicator_start = line.find('[').ok_or(ParseError::InvalidFormat)?;
+        let indicator_end = line.find(']').ok_or(ParseError::InvalidFormat)?;
 
         let indicator_str = &line[indicator_start + 1..indicator_end];
         let indicators: Vec<Indicator> = indicator_str
@@ -90,21 +60,15 @@ impl Machine {
 
         let rest = &line[indicator_end + 1..];
 
-        // Parse joltages: {3,5,4,7}
-        let joltage_start = rest
-            .find('{')
-            .ok_or_else(|| ParseError::InvalidFormat("Missing '{' for joltage".into()))?;
-        let joltage_end = rest
-            .find('}')
-            .ok_or_else(|| ParseError::InvalidFormat("Missing '}' for joltage".into()))?;
+        let joltage_start = rest.find('{').ok_or(ParseError::InvalidFormat)?;
+        let joltage_end = rest.find('}').ok_or(ParseError::InvalidFormat)?;
 
         let joltage_str = &rest[joltage_start + 1..joltage_end];
         let joltages: Vec<i32> = joltage_str
             .split(',')
-            .map(|s| s.trim().parse::<i32>())
+            .map(|s| s.trim().parse::<i32>().map_err(|_| ParseError::ParseInt))
             .collect::<Result<_, _>>()?;
 
-        // Parse buttons: (3) (1,3) (2) ...
         let buttons_str = &rest[..joltage_start];
         let buttons: Vec<Vec<i32>> = buttons_str
             .split(')')
@@ -114,7 +78,7 @@ impl Machine {
             })
             .map(|s| {
                 s.split(',')
-                    .map(|n| n.trim().parse::<i32>())
+                    .map(|n| n.trim().parse::<i32>().map_err(|_| ParseError::ParseInt))
                     .collect::<Result<Vec<_>, _>>()
             })
             .collect::<Result<_, _>>()?;
@@ -126,15 +90,6 @@ impl Machine {
         })
     }
 
-    fn press_button(&mut self, button_group: &[i32]) {
-        for &index in button_group {
-            if let Some(indicator) = self.indicators.get_mut(index as usize) {
-                indicator.current_state = !indicator.current_state;
-            }
-        }
-    }
-
-    /// Find minimum button presses using Gaussian elimination over GF(2)
     fn min_presses(&self) -> Option<usize> {
         let num_buttons = self.buttons.len();
 
@@ -167,20 +122,12 @@ impl Machine {
         ))
     }
 
-    /// Build the augmented matrix [A | b]
-    ///
-    /// Each row represents an indicator light.
-    /// Each column (except the last) represents a button.
-    /// matrix[i][j] = true means "button j toggles indicator i"
-    /// The last column is the target: desired_state XOR current_state
-    /// (what needs to change for each indicator).
     fn build_augmented_matrix(&self) -> Vec<Vec<bool>> {
         let num_indicators = self.indicators.len();
         let num_buttons = self.buttons.len();
 
         let mut matrix = vec![vec![false; num_buttons + 1]; num_indicators];
 
-        // Fill in which buttons affect which indicators
         for (btn_idx, button) in self.buttons.iter().enumerate() {
             for &indicator_idx in button {
                 let idx = indicator_idx as usize;
@@ -190,7 +137,6 @@ impl Machine {
             }
         }
 
-        // Fill in the target column: what needs to flip
         for (i, indicator) in self.indicators.iter().enumerate() {
             matrix[i][num_buttons] = indicator.desired_state ^ indicator.current_state;
         }
@@ -199,23 +145,17 @@ impl Machine {
     }
 }
 
-/// Gaussian Elimination over GF(2)
-///
-/// Transforms the matrix into reduced row echelon form using XOR operations.
-/// Returns the indices of pivot columns.
 fn gaussian_eliminate(matrix: &mut [Vec<bool>], num_buttons: usize) -> Vec<usize> {
     let num_rows = matrix.len();
     let mut pivot_cols = Vec::new();
     let mut pivot_row = 0;
 
     for col in 0..num_buttons {
-        // Find a row with a 1 in this column
         let pivot_found = (pivot_row..num_rows).find(|&row| matrix[row][col]);
 
         if let Some(found) = pivot_found {
             matrix.swap(pivot_row, found);
 
-            // Eliminate all other 1s in this column using XOR
             for row in 0..num_rows {
                 if row != pivot_row && matrix[row][col] {
                     xor_rows(matrix, row, pivot_row);
@@ -230,7 +170,6 @@ fn gaussian_eliminate(matrix: &mut [Vec<bool>], num_buttons: usize) -> Vec<usize
     pivot_cols
 }
 
-/// XOR row `target` with row `source`
 fn xor_rows(matrix: &mut [Vec<bool>], target: usize, source: usize) {
     let num_cols = matrix[target].len();
     for col in 0..num_cols {
@@ -238,8 +177,6 @@ fn xor_rows(matrix: &mut [Vec<bool>], target: usize, source: usize) {
     }
 }
 
-/// Check if the system has a solution.
-/// A row of all zeros with a 1 in the target column means no solution.
 fn is_consistent(matrix: &[Vec<bool>], pivot_cols: &[usize], num_buttons: usize) -> bool {
     let num_pivots = pivot_cols.len();
 
@@ -252,7 +189,6 @@ fn is_consistent(matrix: &[Vec<bool>], pivot_cols: &[usize], num_buttons: usize)
     true
 }
 
-/// Find free columns (buttons we can choose to press or not).
 fn find_free_columns(num_buttons: usize, pivot_cols: &[usize]) -> Vec<usize> {
     (0..num_buttons)
         .filter(|c| !pivot_cols.contains(c))
@@ -292,7 +228,6 @@ fn find_minimum_weight_solution(
     min_presses
 }
 
-/// Compute a full solution given an assignment of free variables.
 fn compute_solution(
     matrix: &[Vec<bool>],
     pivot_cols: &[usize],
@@ -302,12 +237,10 @@ fn compute_solution(
 ) -> Vec<bool> {
     let mut solution = vec![false; num_buttons];
 
-    // Set free variables from the bit pattern
     for (i, &col) in free_cols.iter().enumerate() {
         solution[col] = (free_assignment >> i) & 1 == 1;
     }
 
-    // Back-substitute to find pivot variables
     for (row_idx, &pivot_col) in pivot_cols.iter().enumerate().rev() {
         let mut val = matrix[row_idx][num_buttons];
 
