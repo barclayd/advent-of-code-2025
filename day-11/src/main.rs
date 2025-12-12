@@ -1,6 +1,6 @@
-use std::fs;
 use crate::Part::{Part1, Part2};
 use std::collections::HashMap;
+use std::fs;
 
 #[derive(PartialEq, Debug)]
 enum Part {
@@ -10,7 +10,6 @@ enum Part {
 
 #[derive(Debug, Clone)]
 struct Device {
-    id: String,
     outputs: Vec<String>,
 }
 
@@ -28,7 +27,6 @@ impl Server {
                 let (id, outputs_str) = line.split_once(": ").expect("invalid format");
                 let outputs = outputs_str.split_whitespace().map(String::from).collect();
                 let device = Device {
-                    id: id.to_string(),
                     outputs,
                 };
                 (id.to_string(), device)
@@ -71,17 +69,37 @@ impl Server {
 
         count
     }
+
+    fn count_paths_through_both(
+        &self,
+        start: &str,
+        end: &str,
+        checkpoint1: &str,
+        checkpoint2: &str,
+    ) -> u64 {
+        let order1 = self.count_paths(start, checkpoint1)
+            * self.count_paths(checkpoint1, checkpoint2)
+            * self.count_paths(checkpoint2, end);
+
+        let order2 = self.count_paths(start, checkpoint2)
+            * self.count_paths(checkpoint2, checkpoint1)
+            * self.count_paths(checkpoint1, end);
+
+        order1 + order2
+    }
 }
 
-fn get_value(file_path: &str, part: Part) -> i32 {
+fn get_value(file_path: &str, part: Part) -> i64 {
     let file_contents =
         fs::read_to_string(file_path).expect("Should have been able to read the file");
 
     let server = Server::new(file_contents);
 
-   if part == Part1 {
-       server.count_paths("you", "out") as i32
-   } else { 4 }
+    if part == Part1 {
+        server.count_paths("you", "out") as i64
+    } else {
+        server.count_paths_through_both("svr", "out", "dac", "fft") as i64
+    }
 }
 
 fn main() {
@@ -91,8 +109,8 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use crate::get_value;
     use crate::Part::{Part1, Part2};
+    use crate::get_value;
 
     #[test]
     fn returns_expected_value_test_data_for_part_1() {
@@ -108,13 +126,13 @@ mod tests {
 
     #[test]
     fn returns_expected_value_test_data_for_part_2() {
-        let value = get_value("./test.txt", Part2);
-        assert_eq!(value, 4);
+        let value = get_value("./test2.txt", Part2);
+        assert_eq!(value, 2);
     }
 
     #[test]
     fn returns_expected_value_for_input_data_for_part_2() {
         let value = get_value("./input.txt", Part2);
-        assert_eq!(value, 4);
+        assert_eq!(value, 331837854931968);
     }
 }
