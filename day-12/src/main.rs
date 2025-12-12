@@ -1,12 +1,5 @@
-use crate::Part::{Part1, Part2};
 use std::collections::HashSet;
 use std::fs;
-
-#[derive(PartialEq, Debug)]
-enum Part {
-    Part1,
-    Part2,
-}
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 struct Shape {
@@ -104,8 +97,10 @@ impl ChristmasTree {
         let mut shapes: Vec<Shape> = Vec::new();
 
         let mut region_start_section = 0;
+
         for (i, section) in sections.iter().enumerate() {
             let first_line = section.lines().next().unwrap_or("");
+
             if first_line.contains('x')
                 && first_line
                     .chars()
@@ -296,49 +291,32 @@ impl ChristmasTree {
             .count()
     }
 }
-fn get_value(file_path: &str, part: Part) -> i64 {
+fn get_value(file_path: &str) -> i64 {
     let file_contents =
         fs::read_to_string(file_path).expect("Should have been able to read the file");
 
     let tree = ChristmasTree::new(file_contents);
 
-    return match part {
-        Part1 => tree.count_fitting_regions() as i64,
-        Part2 => 1,
-    };
+    tree.count_fitting_regions() as i64
 }
 
 fn main() {
-    println!("Part 1 value: {}", get_value("./input.txt", Part1));
-    println!("Part 2 value: {}", get_value("./input.txt", Part2));
+    println!("Part 1 value: {}", get_value("./input.txt"));
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::Part::{Part1, Part2};
     use crate::get_value;
 
     #[test]
     fn returns_expected_value_test_data_for_part_1() {
-        let value = get_value("./test.txt", Part1);
+        let value = get_value("./test.txt");
         assert_eq!(value, 2);
     }
 
     #[test]
     fn returns_expected_value_for_input_data_for_part_1() {
-        let value = get_value("./input.txt", Part1);
+        let value = get_value("./input.txt");
         assert_eq!(value, 463);
-    }
-
-    #[test]
-    fn returns_expected_value_test_data_for_part_2() {
-        let value = get_value("./test.txt", Part2);
-        assert_eq!(value, 1);
-    }
-
-    #[test]
-    fn returns_expected_value_for_input_data_for_part_2() {
-        let value = get_value("./input.txt", Part2);
-        assert_eq!(value, 1);
     }
 }
