@@ -49,7 +49,7 @@ impl Rational {
     const ZERO: Self = Self { num: 0, den: 1 };
 
     fn new(num: i64, den: i64) -> Self {
-        assert!(den != 0, "Division by zero");
+        assert_ne!(den, 0, "Division by zero");
 
         if num == 0 {
             return Self::ZERO;
