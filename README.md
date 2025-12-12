@@ -87,3 +87,4 @@ These run in a parallelized matrix.
 | 8   | [Playground](https://adventofcode.com/2025/day/8)          | ⭐⭐    |
 | 9   | [Movie Theatre](https://adventofcode.com/2025/day/9)       | ⭐⭐    |
 | 10  | [Factory](https://adventofcode.com/2025/day/10)            | ⭐⭐    |
+| 11  | [Reactor](https://adventofcode.com/2025/day/11)            |       |
